@@ -43,10 +43,15 @@ public class Task3 extends Thread {
             }
         }
         doNotify("Task3 done.");
+        end();
     }
     
     public void end() {
         exit = true;
+    }
+    
+    public boolean getExitStatus() {
+        return exit;
     }
     
     // the following two methods allow property change listeners to be added

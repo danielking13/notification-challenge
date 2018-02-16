@@ -6,7 +6,6 @@
 package notifcationexamples;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -40,78 +39,95 @@ public class NotificationsUIController implements Initializable, Notifiable {
     private Task2 task2;
     private Task3 task3;
     
+    private boolean isRunning = false;
+    private boolean twoIsRunning = false;
+    private boolean threeIsRunning = false;
+    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
     }
     
     public void start(Stage stage) {
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            public void handle(WindowEvent we) {
-                if (task1 != null) task1.end();
-                if (task2 != null) task2.end();
-                if (task3 != null) task3.end();
-            }
+        stage.setOnCloseRequest((WindowEvent we) -> {
+            if (task1 != null) task1.end();
+            if (task2 != null) task2.end();
+            if (task3 != null) task3.end();
         });
     }
     
     @FXML
     public void startTask1(ActionEvent event) {
         System.out.println("start task 1");
-        if (task1 == null) {
+        if (!isRunning) {
             task1 = new Task1(2147483647, 1000000);
             task1.setNotificationTarget(this);
             task1.start();
             task1Button.setText("End Task 1");
+            isRunning = true;
         } else {
             task1Button.setText("Start Task 1");
             task1.end();
-            task1 = null;
+            isRunning = false;
         }
     }
     
     @Override
     public void notify(String message) {
         if (message.equals("Task1 done.")) {
-            task1 = null;
-        }
+            isRunning = false;
+            task1Button.setText("Start Task 1");
+            task1.end();
+        } 
         textArea.appendText(message + "\n");
     }
     
     @FXML
     public void startTask2(ActionEvent event) {
         System.out.println("start task 2");
-        if (task2 == null) {
+        if (!twoIsRunning) {
             task2 = new Task2(2147483647, 1000000);
             task2.setOnNotification((String message) -> {
                 textArea.appendText(message + "\n");
+                if(message.equals("Task2 done.")) {
+                    twoIsRunning = false;
+                    task2Button.setText("Start Task 2");
+                    task2.end();
+                }
             });
             
             task2.start();
             task2Button.setText("End Task 2");
+            twoIsRunning = true; 
         } else {
             task2Button.setText("Start Task 2");
             task2.end();
-            task2 = null;
+            twoIsRunning = false;
         }       
     }
     
     @FXML
     public void startTask3(ActionEvent event) {
         System.out.println("start task 3");
-        if (task3 == null) {
+        if (!threeIsRunning) {
             task3 = new Task3(2147483647, 1000000);
             // this uses a property change listener to get messages
             task3.addPropertyChangeListener((PropertyChangeEvent evt) -> {
                 textArea.appendText((String)evt.getNewValue() + "\n");
+                if(task3.getExitStatus()) {
+                    task3Button.setText("Start Task 3");
+                    threeIsRunning = false;
+                    task3.end();
+                }
             });
             
             task3.start();
             task3Button.setText("End Task 3");
+            threeIsRunning = true;
         } else {
             task3Button.setText("Start Task 3");
             task3.end();
-            task3 = null;
+            threeIsRunning = false;
         }  
     } 
 }
